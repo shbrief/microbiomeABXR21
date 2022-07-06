@@ -1,0 +1,129 @@
+---
+title: "ABX R21 Preliminary Analysis"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: false
+    toc_depth: 3
+  BiocStyle::pdf_document:
+    toc: true
+    toc_float: false
+    toc_depth: 3
+abstract: "SIAMCAT: Vincent + Raymond (This vignette is part of Chloe's thesis Aim3.)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, collapse = TRUE, warning = FALSE)
+```
+
+# Intro
+**Develop and evaluate the prediction models for recent antibiotics usage**    
+Researchers often exclude participants with recent antibiotic use, but this may introduce selection bias by excluding the least healthy individuals. *We hypothesize that antibiotic usage can be detected from the current microbiome status using the prediction models trained on microbiome datasets with recent antibiotics exposure.* We will construct the prediction models and test how well they can infer probable antibiotic exposure from the gut microbiome. Using prediction models from this aim, researchers can stratify analyses or include participants who may have otherwise been excluded from the study.
+
+## Load packages
+SIAMCAT is used for this analysis.
+```{r}
+suppressPackageStartupMessages({
+    library(curatedMetagenomicData)
+    library(dplyr)
+    library(mia)
+    library(SIAMCAT)
+    library(stringr)
+    library(ggplot2)
+    library(microbiomeABXR21) # temporary package for EDA
+})
+```
+
+## Script
+This script requires `studyName` and `abx` inputs.
+```{r}
+siamcat_cmd <- system.file("scripts/siamcat_cmd.R", 
+                           package = "microbiomeABXR21")
+```
+
+# Modeling
+```{r}
+studyNames <- c("VincentC_2016", "RaymondF_2016")
+
+## Metadata
+meta <- curatedMetagenomicData::sampleMetadata
+submeta <- meta %>% 
+    filter(study_name == studyNames[1] | study_name == studyNames[2])
+```            
+
+Prepare `allData` object
+```{r allData}
+## Download data
+allData <- returnSamples(submeta, "relative_abundance")
+colData(allData)$study_name %>% table() # summarize the number of samples
+assay(allData) <- assay(allData)/100 # percentage to decimals
+
+## Clean ABX info
+colData(allData)$abx <- colData(allData)$antibiotics_family
+colData(allData)$abx[which(is.na(colData(allData)$abx))] <- "control"
+abx_ls <- c("carbapenems", "cephalosporins", "fluoroquinolones",
+            "glycopeptides", "macrolides", "nitroimidazoles",
+            "penicillin", "sulfonamides")
+for (abx_name in abx_ls) {
+    ind <- which(colData(allData)$antibiotics_family %>% str_detect(., abx_name))
+    colData(allData)$abx[ind] <- abx_name
+}
+```
+
+```{r ABX_summary}
+## Check the ABX classes used
+for (studyName in studyNames) {
+    sub_ind <- colData(allData)$study_name == studyName
+    res <- table(colData(allData)$abx[sub_ind])
+    print(paste0("ABX classes in ", studyName, ":"))
+    print(res)
+}
+```
+
+
+## Raymond dataset
+This script requires `allData`,`studyName` and `abx` inputs.
+```{r}
+siamcat_cmd <- system.file("scripts/siamcat_cmd.R", 
+                           package = "microbiomeABXR21")
+```
+
+```{r message=FALSE, warning=FALSE}
+## Required inputs
+studyName <- "RaymondF_2016"
+abx <- "cephalosporins"
+source(siamcat_cmd)
+```
+
+## Vincent dataset
+```{r message=FALSE, warning=FALSE}
+## Required inputs
+studyName <- "VincentC_2016"
+abx <- "penicillin"
+source(siamcat_cmd)
+```
+
+
+
+
+# Genus-Level Modeling
+```{r}
+## Genus-level data
+allData <- agglomerateByRank(allData, rank = "genus")
+```
+
+## Raymond dataset
+```{r}
+studyName <- "RaymondF_2016"
+abx <- "cephalosporins"
+source(siamcat_cmd)
+```
+
+## Vincent dataset
+```{r}
+studyName <- "VincentC_2016"
+abx <- "penicillin"
+source(siamcat_cmd)
+```
+
