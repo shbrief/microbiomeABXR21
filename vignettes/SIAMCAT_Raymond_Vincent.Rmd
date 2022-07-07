@@ -14,7 +14,8 @@ abstract: "SIAMCAT: Vincent + Raymond (This vignette is part of Chloe's thesis A
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, collapse = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, collapse = TRUE, 
+                      warning = FALSE, eval = FALSE)
 ```
 
 # Intro
@@ -23,7 +24,7 @@ Researchers often exclude participants with recent antibiotic use, but this may 
 
 ## Load packages
 SIAMCAT is used for this analysis.
-```{r}
+```{r eval=TRUE}
 suppressPackageStartupMessages({
     library(curatedMetagenomicData)
     library(dplyr)
@@ -43,7 +44,7 @@ siamcat_cmd <- system.file("scripts/siamcat_cmd.R",
 ```
 
 # Modeling
-```{r}
+```{r eval=TRUE}
 studyNames <- c("VincentC_2016", "RaymondF_2016")
 
 ## Metadata
@@ -53,7 +54,7 @@ submeta <- meta %>%
 ```            
 
 Prepare `allData` object
-```{r allData}
+```{r allData, eval=TRUE, message=FALSE}
 ## Download data
 allData <- returnSamples(submeta, "relative_abundance")
 colData(allData)$study_name %>% table() # summarize the number of samples
@@ -71,7 +72,7 @@ for (abx_name in abx_ls) {
 }
 ```
 
-```{r ABX_summary}
+```{r ABX_summary, eval=TRUE}
 ## Check the ABX classes used
 for (studyName in studyNames) {
     sub_ind <- colData(allData)$study_name == studyName
@@ -96,19 +97,45 @@ abx <- "cephalosporins"
 source(siamcat_cmd)
 ```
 
+```{r echo=FALSE, message=FALSE, eval=TRUE}
+studyName <- "RaymondF_2016"
+abx <- "cephalosporins"
+
+fname <- paste0(studyName, "_evaluation_", abx)
+if (length(metadata(allData)) != 0) {
+    fname <- paste0(fname, "_", metadata(allData))}
+
+model_eval <- readRDS(paste0(fname, ".rds"))
+model.evaluation.plot(model_eval)
+```
+
 ## Vincent dataset
 ```{r message=FALSE, warning=FALSE}
 ## Required inputs
 studyName <- "VincentC_2016"
 abx <- "penicillin"
 source(siamcat_cmd)
+
+## Error from `check.confounders` step:      
+# Error in ctrfn(levels(x), contrasts = contrasts) :
+# orthogonal polynomials cannot be represented accurately enough for 97 degrees of freedom
+```
+
+```{r echo=FALSE, message=FALSE, eval=TRUE}
+studyName <- "VincentC_2016"
+abx <- "penicillin"
+
+fname <- paste0(studyName, "_evaluation_", abx)
+if (length(metadata(allData)) != 0) {
+    fname <- paste0(fname, "_", metadata(allData))}
+
+model_eval <- readRDS(paste0(fname, ".rds"))
+model.evaluation.plot(model_eval)
 ```
 
 
-
-
 # Genus-Level Modeling
-```{r}
+```{r eval=TRUE}
 ## Genus-level data
 allData <- agglomerateByRank(allData, rank = "genus")
 ```
@@ -120,6 +147,18 @@ abx <- "cephalosporins"
 source(siamcat_cmd)
 ```
 
+```{r echo=FALSE, message=FALSE, eval=TRUE}
+studyName <- "RaymondF_2016"
+abx <- "cephalosporins"
+
+fname <- paste0(studyName, "_evaluation_", abx)
+if (length(metadata(allData)) != 0) {
+    fname <- paste0(fname, "_", metadata(allData))}
+
+model_eval <- readRDS(paste0(fname, ".rds"))
+model.evaluation.plot(model_eval)
+```
+
 ## Vincent dataset
 ```{r}
 studyName <- "VincentC_2016"
@@ -127,3 +166,14 @@ abx <- "penicillin"
 source(siamcat_cmd)
 ```
 
+```{r echo=FALSE, message=FALSE, eval=TRUE}
+studyName <- "VincentC_2016"
+abx <- "penicillin"
+
+fname <- paste0(studyName, "_evaluation_", abx)
+if (length(metadata(allData)) != 0) {
+    fname <- paste0(fname, "_", metadata(allData))}
+
+model_eval <- readRDS(paste0(fname, ".rds"))
+model.evaluation.plot(model_eval)
+```

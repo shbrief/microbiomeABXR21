@@ -51,15 +51,15 @@ sc.filt <- filter.features(sc.obj,
 # ## Check association
 # sc.assc <- check.associations(sc.filt, test = "lm", feature.type = "filtered")
 
-## Check confounders and save the result in PDF
-fname <- paste0(studyName, "_confounder_", abx, ".pdf")
-if (length(metadata(dat)) != 0) {
-    fname <- paste0(studyName, "_confounder_", abx, "_", metadata(dat), ".pdf")}
-sc.conf <- check.confounders(sc.filt,
-                             fn.plot = fname,
-                             meta.in = NULL,
-                             feature.type = "filtered",
-                             verbose = 1)
+# ## Check confounders and save the result in PDF
+# fname <- paste0(studyName, "_confounder_", abx)
+# if (length(metadata(dat)) != 0) {
+#     fname <- paste0(fname, "_", metadata(dat))}
+# sc.conf <- check.confounders(sc.filt,
+#                              fn.plot = paste0(fname, ".pdf"),
+#                              meta.in = NULL,
+#                              feature.type = "filtered",
+#                              verbose = 1)
 
 ## Normalization
 sc.norm <- normalize.features(sc.filt, norm.method = "rank.unit")
@@ -76,21 +76,22 @@ system.time(sc.mod <- train.model(sc.split,
 sc.pred <- make.predictions(sc.mod)
 pred_matrix <- pred_matrix(sc.pred)
 
-## Model evaluation plot as pdf
-fname <- paste0(studyName, "_evaluation_", abx, ".pdf")
+## Model evaluation plot as PDF
+fname <- paste0(studyName, "_evaluation_", abx)
 if (length(metadata(dat)) != 0) {
-    fname <- paste0(studyName, "_evaluation_", abx, "_", metadata(dat), ".pdf")}
+    fname <- paste0(fname, "_", metadata(dat))}
 
 sc.eval <- evaluate.predictions(sc.pred)
+saveRDS(sc.eval, file = paste0(fname, ".rds")) # Save the model evaluation
 model.evaluation.plot(sc.eval,
-                      fn.plot = fname)
+                      fn.plot = paste0(fname, ".pdf"))
 
 ## Export final model interpretation plot as PDF
-fname <- paste0(studyName, "_interpretation_", abx, ".pdf")
+fname <- paste0(studyName, "_interpretation_", abx)
 if (length(metadata(dat)) != 0) {
-    fname <- paste0(studyName, "_interpretation_", abx, "_", metadata(dat), ".pdf")}
+    fname <- paste0(fname, "_", metadata(dat))}
 model.interpretation.plot(sc.eval,
-                          fn.plot = fname,
+                          fn.plot = paste0(fname, ".pdf"),
                           consens.thres = 0.01,
                           limits = c(-3, 3),
                           heatmap.type = "zscore")
