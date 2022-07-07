@@ -1,8 +1,8 @@
 Package: microbiomeABXR21
 Type: Package
 Title: Antibiotic exposure prediction modeling from microbiome data
-Version: 0.1.0
-date: 2022-7-5
+Version: 0.1.1
+date: 2022-7-6
 Author: Sehyun Oh
 Maintainer: Sehyun Oh <shbrief@gmail.com>
 Description: Preliminary analysis for microbiomeABX R21 application
