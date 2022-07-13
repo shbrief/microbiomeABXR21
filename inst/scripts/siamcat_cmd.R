@@ -1,4 +1,4 @@
-## Required inputs: studyName, abx
+## Required inputs: allData, studyName, abx
 ## studyName = "VincentC_2016"
 ## abx = "cephalosporins"
 
@@ -23,7 +23,7 @@
 #     colData(dat)$abx[ind] <- abx_name
 # }
 
-## Subset data
+## Subset allData to a specific study
 dat <- subset(allData, select = colData(allData)$study_name == studyName)
 
 ## Convert to phyloseq object
@@ -36,14 +36,14 @@ feat.phylo <- otu_table(phylo)
 ## Set variable of interest
 var_lab <- create.label(meta = sample.phylo,
                         label = "abx",
-                        case = abx)
+                        case = abx) # name of the group that will be used as a positive label
 
 ## Create SIAMCAT object
 sc.obj <- siamcat(feat = feat.phylo,
                   label = var_lab,
                   meta = sample.phylo)
 
-## Filter by abundance
+## Filter by abundance (unsupervised feature filtering)
 sc.filt <- filter.features(sc.obj,
                            filter.method = "abundance",
                            cutoff = 0.001)
@@ -62,26 +62,31 @@ sc.filt <- filter.features(sc.obj,
 #                              verbose = 1)
 
 ## Normalization
-sc.norm <- normalize.features(sc.filt, norm.method = "rank.unit")
+sc.norm <- normalize.features(sc.filt,
+                              norm.method = "rank.unit")
 
-## Split tranining and test datasets
+## Split a dataset into training and a test sets (prepare for cross-validation)
 sc.split <- create.data.split(sc.norm,
                               num.folds = 6,
                               num.resample = 2,
                               inseparable = "subject_id")
 
-## Random Forest
+## Model training using Random Forest
 system.time(sc.mod <- train.model(sc.split,
                                   method = "randomForest")) # this takes 5~10 min
+
+## Prediction
+# make predictions on a test set (cross-validation) or
+# new dataset (siamcat object provided through `siamcat.holdout` argument)
 sc.pred <- make.predictions(sc.mod)
-pred_matrix <- pred_matrix(sc.pred)
+pred_matrix <- pred_matrix(sc.pred) # retrieve the prediction matrix
 
 ## Model evaluation plot as PDF
 fname <- paste0(studyName, "_evaluation_", abx)
 if (length(metadata(dat)) != 0) {
     fname <- paste0(fname, "_", metadata(dat))}
 
-sc.eval <- evaluate.predictions(sc.pred)
+sc.eval <- evaluate.predictions(sc.pred) # AU-ROC and Precision-Recall Curve
 saveRDS(sc.eval, file = paste0(fname, ".rds")) # Save the model evaluation
 model.evaluation.plot(sc.eval,
                       fn.plot = paste0(fname, ".pdf"))

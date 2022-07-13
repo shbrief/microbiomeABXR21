@@ -36,14 +36,14 @@ suppressPackageStartupMessages({
 })
 ```
 
-## Script
-This script requires `studyName` and `abx` inputs.
+## SIAMCAT script
+This script requires `allData`,`studyName` and `abx` inputs.
 ```{r}
 siamcat_cmd <- system.file("scripts/siamcat_cmd.R", 
                            package = "microbiomeABXR21")
 ```
 
-# Modeling
+## Load datasets
 ```{r eval=TRUE}
 studyNames <- c("VincentC_2016", "RaymondF_2016")
 
@@ -51,7 +51,15 @@ studyNames <- c("VincentC_2016", "RaymondF_2016")
 meta <- curatedMetagenomicData::sampleMetadata
 submeta <- meta %>% 
     filter(study_name == studyNames[1] | study_name == studyNames[2])
-```            
+```      
+
+Chloe found out that there is an error in the Vincent metadata in cMD package.
+This is the corrected metadata:
+```{r}
+dir <- "~/Packages/microbiomeABXR21/inst/extdata/"
+meta_vi <- read.csv(file.path(dir, "Vincent_metadata.csv"))
+```
+
 
 Prepare `allData` object
 ```{r allData, eval=TRUE, message=FALSE}
@@ -82,14 +90,8 @@ for (studyName in studyNames) {
 }
 ```
 
-
+# Modeling
 ## Raymond dataset
-This script requires `allData`,`studyName` and `abx` inputs.
-```{r}
-siamcat_cmd <- system.file("scripts/siamcat_cmd.R", 
-                           package = "microbiomeABXR21")
-```
-
 ```{r message=FALSE, warning=FALSE}
 ## Required inputs
 studyName <- "RaymondF_2016"
