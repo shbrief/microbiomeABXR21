@@ -7,14 +7,14 @@ Table S5. Post-natal antimicrobial use by class and age of child
 
 
 ### `Vatanen_mmc2.xlsx`
-[Supplementary Table 1](https://www.cell.com/cms/10.1016/j.cell.2016.04.007/attachment/a61300b3-0fd7-43b1-acfc-4accd7e538de/mmc2.xlsx) from Vatanen paper. There are four tabs: 1) Explanations, 2) Basics and 
-medications, 3) AABs and IgEs, and 4) Early feeding.
+[Supplementary Table 1](https://www.cell.com/cms/10.1016/j.cell.2016.04.007/attachment/a61300b3-0fd7-43b1-acfc-4accd7e538de/mmc2.xlsx) from Vatanen paper. 
+There are four tabs: 1) Explanations, 2) Basics and medications, 3) AABs and IgEs, and 4) Early feeding.
 
 
-## `Vincent_metadata.csv`
+### `Vincent_metadata.csv`
 There is an error in the metadata of Vincent dataset in curatedMetagenomicData.
-This is the correct version of the metadta. 
-Check the `Vincent_metadata_dictionary.xlsx` as wll.
+This is the correct version of the metadata. 
+Check the `Vincent_metadata_dictionary.xlsx` as well.
    
 
 ### `Yassour_Table_S1.xls`
