@@ -1,0 +1,21 @@
+sample_id,study_name,subject_id,body_site,antibiotics_current_use,study_condition,disease,age,infant_age,age_category,gender,country,non_westernized,sequencing_platform,DNA_extraction_kit,PMID,number_reads,number_bases,minimum_read_length,median_read_length,NCBI_accession,pregnant,lactating,curator,type
+SRS4115648,KorryB_2020,DC10,cecum,doxycycline,doxycycline,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,8992888352,,302,SRR8291342,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115647,KorryB_2020,DC09,cecum,doxycycline,doxycycline,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11138027874,,302,SRR8291343,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115645,KorryB_2020,DC01,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,9049567108,,302,SRR8291345,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115644,KorryB_2020,DC02,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,7202987202,,302,SRR8291346,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115643,KorryB_2020,DC03,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11259872794,,302,SRR8291347,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115642,KorryB_2020,DC04,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,10144176678,,302,SRR8291348,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115640,KorryB_2020,DC06,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11163726564,,302,SRR8291350,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115639,KorryB_2020,DC07,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,13557092268,,302,SRR8291351,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115638,KorryB_2020,DC08,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11708004554,,302,SRR8291352,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115632,KorryB_2020,DC19,cecum,ciprofloxacin,ciprofloxacin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,14630373390,,302,SRR8291358,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115631,KorryB_2020,DC20,cecum,ciprofloxacin,ciprofloxacin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,9144403262,,302,SRR8291359,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115630,KorryB_2020,DC15,cecum,amoxicillin,amoxicillin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,13973614594,,302,SRR8291360,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115629,KorryB_2020,DC16,cecum,amoxicillin,amoxicillin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11249042168,,302,SRR8291361,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115628,KorryB_2020,DC17,cecum,ciprofloxacin,ciprofloxacin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11641042396,,302,SRR8291362,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115627,KorryB_2020,DC18,cecum,ciprofloxacin,ciprofloxacin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11117314600,,302,SRR8291363,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115626,KorryB_2020,DC11,cecum,doxycycline,doxycycline,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,15869883164,,302,SRR8291364,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115625,KorryB_2020,DC12,cecum,doxycycline,doxycycline,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,12092356934,,302,SRR8291365,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115624,KorryB_2020,DC13,cecum,amoxicillin,amoxicillin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,8775477948,,302,SRR8291366,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115623,KorryB_2020,DC14,cecum,amoxicillin,amoxicillin,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,11638343120,,302,SRR8291367,NA,NA,Chloe Mirzayi,METAGENOMIC
+SRS4115622,KorryB_2020,DC05,cecum,none,none,NA,6 weeks,NA,NA,female,USA,NA,IlluminaHiSeq,ZymoBIOMICS DNA/RNA Miniprep kit,,,9939928038,,302,SRR8291368,NA,NA,Chloe Mirzayi,METAGENOMIC

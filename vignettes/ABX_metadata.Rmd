@@ -1,0 +1,555 @@
+---
+title: "Antibiotic exposure status of the training datasets"
+author: "Sehyun Oh"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: false
+    toc_depth: 3
+  BiocStyle::pdf_document:
+    toc: true
+    toc_float: false
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, collapse = TRUE, 
+                      warning = FALSE)
+```
+
+# Setup
+```{r}
+## Load packages
+suppressPackageStartupMessages({
+    library(dplyr)
+    library(stringr)
+    library(ggplot2)
+})
+
+## Load metadata tables
+dir <- system.file("extdata", package = "microbiomeABXR21")
+meta_b <- read.table(file.path(dir, "Bokulich_metadata.txt"), sep = "\t", header = TRUE)
+meta_k <- read.csv(file.path(dir, "Korry_metadata.csv"))
+meta_vi <- read.csv(file.path(dir, "Vincent_metadata.csv"))
+meta_y <- read.csv(file.path(dir, "Yassour_metadata.csv"))
+meta_z <- read.csv(file.path(dir, "Zaura_metadata.csv"))
+
+## Raymond dataset
+meta <- curatedMetagenomicData::sampleMetadata
+meta_r <- meta %>% filter(study_name == "RaymondF_2016")
+meta_vi_wrong <- meta %>% filter(study_name == "VincentC_2016") # Chloe identified an issue 
+
+## Source the plotting script
+code_dir <- system.file("scripts", package = "microbiomeABXR21")
+source(file.path(code_dir, "plotMultiABX.R"))
+```
+
+
+
+
+# Bokulich dataset
+## Overview
+```{r}
+dim(meta_b)
+head(meta_b, 3)
+```
+
+## Mapping file
+```{r}
+mapping_b <- read.table(file.path(dir, "Bokulich_mapping_file_corrected.txt"), 
+                        sep = "\t", header = FALSE)
+head(mapping_b)
+table(mapping_b$V3)
+```
+
+## ABX related metadata columns
+```{r}
+abx_cols <- grep("abx", colnames(meta_b), ignore.case = TRUE, value = TRUE)
+for (abx_col in abx_cols) {
+    print(abx_col)
+    print(table(meta_b[,abx_col]))
+}
+```
+
+## Supplementary Tables
+Table S3. Prenatal antimicrobial use by class and purpose   
+Table S4. Peri-natal antibiotic use by class and indication   
+Table S5. Post-natal antimicrobial use by class and age of child   
+```{r}
+supT3 <- xlsx::read.xlsx(file.path(dir, "Bokulich_Sup_Tables.xlsx"), 1)
+supT4 <- xlsx::read.xlsx(file.path(dir, "Bokulich_Sup_Tables.xlsx"), 2) %>% .[1:89, 1:6] # remove NAs
+supT5 <- xlsx::read.xlsx(file.path(dir, "Bokulich_Sup_Tables.xlsx"), 3)
+```
+
+```{r}
+head(supT3)
+head(supT4)
+head(supT5)
+```
+
+### Perinatal ABX exposure
+Child's perinatal ABX exposure data (Sup.Table4) includes three ABXs. 4 children
+were exposed to three ABXs and 42 children were exposed to only one ABX.
+
+```{r}
+supT4_c <- filter(supT4, Subject == "Child")
+supT4_c %>% 
+    group_by(Antibiotic) %>%
+    summarize(n = length(unique(Study_ID)))
+
+## Children exposed to only one perinatal ABX treatment 
+abx_summary <- supT4_c %>%
+    group_by(Study_ID) %>%
+    summarize(n = length(unique(Antibiotic)),
+              abx = paste(Antibiotic, collapse = " | "))
+abx_summary %>% 
+    filter(n == 1) %>%
+    group_by(abx) %>%
+    summarise(n = length(unique(Study_ID)))
+```
+
+### Postnatal ABX exposure
+24 Children had postnatal ABX exposures.
+```{r}
+## Subset Sup.Table5 to only child cases
+mother_ind <- grep("Mother", supT5$Study.ID)
+supT5_c <- supT5[-mother_ind,]
+
+## The number of children exposed postnatal ABX
+length(unique(supT5_c$Study.ID))
+```
+
+15 children had postnatal ABX exposure to only one class of ABX. For multiple
+ABX exposure cases, the exposure time is spread out, so we can potentially use 
+them as independent single exposure cases...?! 
+
+```{r}
+## Summary of Child's postnatal ABX exposure
+supT5_c_summary <- 
+    supT5_c %>%
+    group_by(Study.ID) %>%
+    summarize(n = length(unique(Class)),
+              abx = paste(Class, collapse = " | "))
+
+supT5_c_summary
+sum(supT5_c_summary$n == 1) # 15 children had postnatal ABX exposure to only one class of ABX
+```
+
+
+
+
+# Korry dataset
+## Overview
+```{r}
+dim(meta_k)
+head(meta_k, 3)
+```
+
+## ABX summary
+Antibiotic class abbreviation in this dataset:   
+
+| Full name                 | Class              |
+|---------------------------|--------------------|
+| Amoxicillin               | Penicillins        |
+| Ciprofloxacin             | Fluoroquinolones   |
+| Doxycycline               | Tetracyclines      |
+
+Based on the paper, there should be 4 each group, but metadata says there are
+8 control mice...? 
+```{r collapse=FALSE}
+meta_k %>%
+    group_by(subject_id) %>%
+    summarize(abx = paste(study_condition, collapse = " | ")) %>%
+    group_by(abx) %>%
+    summarize(n = length(unique(subject_id)))
+```
+
+
+
+
+# Raymond dataset
+## Overview
+```{r}
+dim(meta_r)
+length(unique(meta_r$subject_id)) # 24 subjects
+```
+
+## ABX related metadata columns
+```{r}
+abx_info <- c("sample_id", "subject_id", "antibiotics_current_use",
+              "study_condition", "days_from_first_collection")
+head(meta_r[,abx_info])
+```
+
+## ABX summary
+All 24 participants have control at the baseline. 6 participants didn't 
+treated with any antibiotic. 
+```{r collapse=FALSE}
+meta_r %>%
+    group_by(subject_id) %>%
+    summarize(trt = paste(study_condition, collapse = " | "))
+```
+
+
+
+
+# Vatanen dataset
+## Overview
+Metadata is collected from the Supplementary Table 1 of the manuscript.
+```{r}
+va_explanation <- xlsx::read.xlsx(file.path(dir, "Vatanen_mmc2.xlsx"), 1)
+va_med <- xlsx::read.xlsx(file.path(dir, "Vatanen_mmc2.xlsx"), 2)
+va_ab <- xlsx::read.xlsx(file.path(dir, "Vatanen_mmc2.xlsx"), 3)
+va_feeding <- xlsx::read.xlsx(file.path(dir, "Vatanen_mmc2.xlsx"), 4)
+```
+
+Each row represents a unique 222 participant.
+```{r}
+dim(va_med)
+length(unique(va_med$Participant)) # The number of participants
+```
+
+## ABX summary
+#### Aggregate individual ABXs into their class  
+```{r}
+class_mapping <- list(Amoxicillin = "Penicillins",
+                      Azithromycin = "Macrolides",
+                      `Clavulanic acid` = "Beta-lactamase inhibitor",
+                      Trimethoprim = "Sulfonamides",
+                      Sulfadiazine = "Sulfonamides", # Sulfadiazine is a short-acting sulfonamide. 
+                      Cefalexin = "Cephalosporins", # typo for Cephalexin?
+                      Phenoxymethylpenicillin = "Penicillins",
+                      Cefuroxime = "Cephalosporins",
+                      Clarithromycin = "Macrolides",
+                      Gentamicin = "Aminoglycosides",
+                      Sulfamethoxazole = "Sulfonamides",
+                      Cefprozil = "Cephalosporins",
+                      Benzylpenicillin = "Penicillins",
+                      Cefazolin = "Cephalosporins",
+                      Ceftriaxone = "Cephalosporins",
+                      Nifuroxazide = "Nitrofurans",
+                      Azitromycin = "Macrolides", # it looks like a typo in metadata
+                      `Systemic antibiotic NAS` = "Systemic antibiotic NAS",
+                      Ampicillin = "Penicillins",
+                      Cefadroxil = "Cephalosporins",
+                      Cefexime = "Cephalosporins", # typo for Cefixime?
+                      Cefotaxim = "Cephalosporins", # typo for Cefotaxime?
+                      Cefotaxime = "Cephalosporins", 
+                      Furazidin = "Hydantoins",
+                      Isoniazid = "antituberculosis agents",
+                      Midecamycin = "Macrolides",
+                      Nitrofurantoin = "Nitrofurans",
+                      Trimetoprim = "Timethoprim") # not sure
+
+table(unlist(class_mapping))
+```
+
+#### Add the ABX summary column
+I combined all the antibiotics exposures, considering following cases as 
+independent data points:   
+1) multiple ABX treated at the same time       
+2) same ABX treated at the different time points  
+
+```{r}
+abx_names <- grep("Name", colnames(va_med), ignore.case = TRUE, value = TRUE)
+sub <- va_med[,abx_names]
+
+sub$abx_all <- NA
+sub$abx_unique <- NA
+sub$abx_unique_n <- 0
+sub$abx_class_all <- NA
+
+for (i in seq_len(nrow(sub))) {
+    
+    ## Collect all ABX info per participant
+    x <- sub[i, abx_names]
+    sub$abx_all[i] <- paste(x[!is.na(x)], collapse = " | ")
+    sub$abx_all[i] <- gsub("and", "|", sub$abx_all[i])
+    
+    ## Unique ABXs
+    unique_abx <- strsplit(sub$abx_all[i], " | ", fixed = TRUE) %>% 
+        unlist %>% 
+        str_replace("^\\w{1}", toupper) %>% 
+        unique
+    
+    sub$abx_unique[i] <- paste(unique_abx, collapse = " | ")
+    sub$abx_unique_n[i] <- length(unique_abx)
+    
+    # Aggregate all ABX to the class level
+    if (length(unique_abx) != 0) {
+        abx_class <- unique(unlist(class_mapping[unique_abx]))
+        sub$abx_class_all[i] <- paste(abx_class, collapse = " | ")
+    }
+}
+```
+
+Summary of all the ABX used in this study
+```{r collapse=FALSE}
+strsplit(sub$abx_class_all, " | ", fixed = TRUE) %>% 
+    unlist %>% 
+    table %>% 
+    sort(decreasing = TRUE)
+```
+
+#### How frequently each participants received the antibiotics? 
+61% of the participants (136 out of 222) received antibiotics in the first 3 
+years of their lives. This is when we consider the following cases as a single 
+independent exposure:   
+1) the same antibiotic were administered at multiple different time points   
+2) individual was treated with multiple types of antibiotics at the same time
+
+```{r}
+abx_freq <- table(rowSums(!is.na(sub)))
+plotMultiABX(abx_freq)
+```
+
+
+# Vincent dataset
+```{r echo=FALSE, eval=FALSE}
+grep("anti", colnames(meta_vi), ignore.case = TRUE, value = TRUE)
+grep("anti", colnames(meta_vi_wrong), ignore.case = TRUE, value = TRUE)
+
+## Vincent metadata dictionary
+meta_vi_dict <- xlsx::read.xlsx(file.path(dir, "Vincent_metadata_dictionary.xlsx"), 1)
+```
+
+There is an error in cMD metadata for this dataset. We clean and update ABX 
+information using the new metadata and metadata dictionary.
+
+## Overview
+ABX exposure information has prior hospitalization (e.g.`PRIOR_CEPH`), three
+different time points prior to stool sample collection, and dichotomized 
+version of it (e.g.`CEPH_bRF`). 
+```{r}
+grep("CEPH", colnames(meta_vi), ignore.case = TRUE, value = TRUE)
+head(meta_vi[,c(grep("CEPH", colnames(meta_vi), ignore.case = TRUE, value = TRUE))])
+```
+
+## ABX summary
+```{r}
+## Subset to only ABX information
+abx_classes <- c("CEPH", "FLUORO", "CARBA", "PENICI", "VANCOIV", "AZITHRO", 
+                 "METRO", "COTRIM", "GENTA", "CLINDA", "DAPTO")
+abx_binary <- paste0(abx_classes, "_bRF")
+meta_vi_abx <- meta_vi[, c("PATIENTID", abx_binary)]
+
+## Quick look
+colSums(meta_vi_abx[,abx_binary]) # the number of patients exposed to a specific ABX
+table(rowSums(meta_vi_abx[,abx_binary])) # the number of ABXs each patient exposed to (0 to 6 ABX)
+meta_vi_abx[which.max(rowSums(meta_vi_abx[,abx_binary])),] # patient exposed to the maximum number (=6) of ABX
+
+## Subset only to 1) NoTreatment and 2) exposure to only one class of ABX
+simple_ind <- which(rowSums(meta_vi_abx[,abx_binary]) %in% c(0, 1))
+x <- meta_vi_abx[simple_ind,] # This step removes 12 patients from 98 total patients 
+
+## Make `abx` column that concatenates dichotomized ABX exposure variables
+for (i in seq_len(nrow(x))) {
+    ind <- which(x[i,] == 1)
+    abx <- gsub("_bRF", "", colnames(x)[ind])
+    x$abx[i] <- paste(abx, collapse = " | ") # this matters when I keep patients exposed to multiple ABX
+    if (length(ind) == 0) {x$abx[i] <- "Control"} # fill NoTreatment
+}
+```
+
+This is the summary of the exposure groups. 12 participants exposed to more 
+than one family of antibiotics are excluded in this summary, so there are total
+of 76 participant's antibiotics exposure data is summarized. 
+
+```{r collapse=FALSE}
+## Summary 
+x %>% 
+    group_by(abx) %>%
+    summarise(n = length(unique(PATIENTID)))
+```
+
+
+
+
+# Yassour datasets
+## Overview
+```{r}
+dim(meta_y)
+length(unique(meta_y$subject_id)) # 39 subjects
+```
+
+## ABX summary
+```{r}
+# ## The number of subjects for each ABX exposure
+# meta_y %>%
+#     group_by(antibiotics_current_use) %>%
+#     summarise(n = length(unique(subject_id)))
+
+## The number of ABX treatments for each subject
+## Multiple different ABX were used
+a <- meta_y %>% 
+    filter(!is.na(antibiotics_current_use)) %>%
+    group_by(subject_id) %>%
+    summarise(abx_trt = length(unique(antibiotics_current_use)))
+plotMultiABX(table(a$abx_trt))
+```
+
+```{r}
+sub_y <- meta_y %>% filter(!is.na(antibiotics_current_use))
+sub_y$abx_all <- NA
+sub_y$abx_unique <- NA
+sub_y$abx_unique_n <- 0
+sub_y$abx_class_all <- NA
+
+for (i in seq_len(nrow(sub_y))) {
+    
+    ## Collect all ABX info per participant
+    sub_y$abx_all[i] <- gsub("and", "|", sub_y$antibiotics_current_use[i])
+    sub_y$abx_all[i] <- gsub(",", "|", sub_y$abx_all[i])
+    
+    ## Unique ABXs
+    unique_abx <- strsplit(sub_y$abx_all[i], " | ", fixed = TRUE) %>% 
+        unlist %>% 
+        str_replace("^\\w{1}", toupper) %>% 
+        unique
+    
+    sub_y$abx_unique[i] <- paste(unique_abx, collapse = " | ")
+    sub_y$abx_unique_n[i] <- length(unique_abx)
+    
+    # Aggregate all ABX to the class level
+    if (length(unique_abx) != 0) {
+        abx_class <- unique(unlist(class_mapping[unique_abx]))
+        sub_y$abx_class_all[i] <- paste(abx_class, collapse = " | ")
+    }
+}
+```
+
+Summary of all the ABX used in this study
+```{r collapse=FALSE}
+strsplit(sub_y$abx_class_all, " | ", fixed = TRUE) %>% 
+    unlist %>% 
+    table %>% 
+    sort(decreasing = TRUE)
+```
+
+## Supplementary Tables
+```{r}
+yas_general <- xlsx::read.xlsx(file.path(dir, "Yassour_Table_S1.xls"), 1) %>% .[,1:6]
+yas_abx <- xlsx::read.xlsx(file.path(dir, "Yassour_Table_S1.xls"), 2)
+yas_feeding <- xlsx::read.xlsx(file.path(dir, "Yassour_Table_S1.xls"), 3)
+```
+
+```{r}
+dim(yas_general)
+head(yas_general, 3)
+length(unique(yas_general$subject)) # 39 unique subjects
+
+dim(yas_abx)
+head(yas_abx, 3)
+length(unique(yas_abx$Subject)) # 21 unique ABX-exposed subjects
+```
+
+```{r}
+## One subject seems missing
+# total 20 subjects with ABX exposure?
+length(intersect(yas_general$subject, unique(yas_abx$Subject))) 
+
+# What is this subject "E028794"? It is only in 'abx' table - not in 'general' table
+setdiff(yas_abx$Subject, yas_general$subject) 
+```
+
+### The number of ABX treatments for each subject
+```{r}
+# ## The number of subjects for each ABX exposure
+# yas_abx %>%
+#     group_by(Antibiotic.type) %>%
+#     summarise(n = length(unique(Subject)))
+
+z <- yas_abx %>% 
+    group_by(Subject) %>%
+    summarise(abx_trt = length(unique(Antibiotic.type)))
+
+## All participants, except one, received more than one ABX
+plotMultiABX(table(z$abx_trt))
+```
+
+### ABX summary
+```{r}
+yas_abx$abx_all <- NA
+yas_abx$abx_unique <- NA
+yas_abx$abx_unique_n <- 0
+yas_abx$abx_class_all <- NA
+
+for (i in seq_len(nrow(yas_abx))) {
+    
+    ## Collect all ABX info per participant
+    x <- yas_abx[i, "Antibiotic.type"]
+    yas_abx$abx_all[i] <- paste(x[!is.na(x)], collapse = " | ")
+    yas_abx$abx_all[i] <- gsub("and", "|", yas_abx$abx_all[i])
+    
+    ## Unique ABXs
+    unique_abx <- strsplit(yas_abx$abx_all[i], " | ", fixed = TRUE) %>% 
+        unlist %>% 
+        str_replace("^\\w{1}", toupper) %>% 
+        unique
+    
+    yas_abx$abx_unique[i] <- paste(unique_abx, collapse = " | ")
+    yas_abx$abx_unique_n[i] <- length(unique_abx)
+    
+    # Aggregate all ABX to the class level
+    if (length(unique_abx) != 0) {
+        abx_class <- unique(unlist(class_mapping[unique_abx]))
+        yas_abx$abx_class_all[i] <- paste(abx_class, collapse = " | ")
+    }
+}
+```
+
+Summary of all the ABX used in this study
+```{r collapse=FALSE}
+strsplit(yas_abx$abx_class_all, " | ", fixed = TRUE) %>% 
+    unlist %>% 
+    table %>% 
+    sort(decreasing = TRUE)
+```
+
+# Zaura dataset
+## Overview
+```{r}
+dim(meta_z)
+head(meta_z, 3)
+```
+
+## ABX summary
+Antibiotic class abbreviation in this dataset:   
+
+| Label  | Full name                 | Class              |
+|--------|---------------------------|--------------------|
+| amox   | Amoxicillin               | Penicillins        |
+| cipro  | Ciprofloxacin             | Fluoroquinolones   |
+| clinda | Clindamycin               | Lincomycins        |
+| minoc  | Minocycline Hydrochloride | Tetracyclines      |
+
+
+```{r}
+meta_z %>% 
+    group_by(antibiotics_current_use) %>%   # `study_condition` is identical
+    summarise(n = length(unique(subject_id)))
+```
+
+```{r collapse=FALSE}
+meta_z$abx <- NA
+class_mapping <- list(amox = "Penicillins", 
+                      cipro = "Fluoroquinolones",
+                      clinda = "Lincomycins",
+                      minoc = "Tetracyclines", 
+                      placebo = "Placebo") 
+
+for (class_abbr in names(class_mapping)) {
+    ind <- which(meta_z$antibiotics_current_use == class_abbr)
+    meta_z$abx[ind] <- class_mapping[[class_abbr]] 
+}
+
+# One data point with `minoc, minoc` label
+ind <- which(meta_z$antibiotics_current_use == "minoc, minoc")
+meta_z$abx[ind] <- "Tetracyclines"
+
+meta_z %>% 
+    group_by(abx) %>%
+    summarise(n = length(unique(subject_id)))
+```
+
